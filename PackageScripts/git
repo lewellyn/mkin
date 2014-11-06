@@ -1,0 +1,99 @@
+#!/bin/sh -x
+
+# Try to keep things clean and without non-system dependencies. :P
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+# Make sure we have the correct packaging root
+if [ ! -d "$1" ] ; then
+	echo "This script is meant to be invoked via Package."
+	exit 254
+else
+	export PACKAGINGROOT="$1"
+	shift
+fi
+
+(
+if [ -n "$1" ] ; then
+	cd git-$1
+fi
+
+if [ ! -f GIT-VERSION-GEN ] ; then
+	echo "This does not look like a git source tree. Aborting."
+	exit 23
+fi
+
+# Build process:
+
+SDK=/Developer/SDKs/MacOSX10.4u.sdk \
+CFLAGS="-fno-common -O3 -fno-strict-aliasing -pipe -arch ppc -arch i686 -nostdinc -B$SDK/usr/include/gcc -B$SDK/usr/lib/gcc -isystem$SDK/usr/include -F$SDK/System/Library/Frameworks" \
+CXXFLAGS=$CFLAGS LDFLAGS="-arch ppc -arch i686 -Wl,-syslibroot,$SDK" \
+./configure -C --prefix=/opt/git && \
+make -j2 && \
+export SRCDIR="${PWD}" && \
+export VERSION=$(cat version) && \
+export RELEASEVERSION=${VERSION/\.rc*} && \
+export VERSIONMAJOR=${RELEASEVERSION/\.*} && \
+export VERSIONMINOR=${RELEASEVERSION#*\.} && \
+export VERSIONMINOR=$(echo ${VERSIONMINOR} | awk -F . '{ printf("%02d%02d",$1,$2); }') && \
+export OUTPUTDIR="${SRCDIR}/../InstallerOutput/git-${VERSION}" && \
+export INSTALLROOT="${OUTPUTDIR}/installroot" && \
+rm -rf "${OUTPUTDIR}" 2>/dev/null ; \
+make DESTDIR="${INSTALLROOT}" NO_INSTALL_HARDLINKS=1 install && \
+mkdir -p "${INSTALLROOT}"/usr/local/bin && \
+(
+cd "${INSTALLROOT}"/opt/git/bin
+for file in *; do ln -s /opt/git/bin/$file "${INSTALLROOT}"/usr/local/bin/$file; done
+) && \
+cp -rp contrib "${INSTALLROOT}"/opt/git && \
+(
+cd "${SRCDIR}/../git-htmldocs-${VERSION}" && \
+mkdir "${INSTALLROOT}"/opt/git/doc && \
+cp -rp . "${INSTALLROOT}"/opt/git/doc
+) && \
+(
+cd "${SRCDIR}/../git-manpages-${VERSION}" && \
+cp -rp . "${INSTALLROOT}"/opt/git/share/man
+) || exit 42
+# cp -rp Documentation "${INSTALLROOT}"/opt/git || exit 42
+
+# Packaging process:
+# Note that the packproj requires Iceberg and its CLI tools.
+(
+echo "Building package for Git ${VERSION}"
+
+export INSTALLDATA="${PACKAGINGROOT}/Installer Templates/git Installer"
+cd "${INSTALLROOT}"/usr/local/bin
+for file in *; do
+	export LINKS="/usr/local/bin/$file ${LINKS}"
+done
+cd "${SRCDIR}"
+
+cp COPYING "${OUTPUTDIR}/LICENSE.txt" && \
+cp Documentation/user-manual.txt "${OUTPUTDIR}/README.txt" && \
+cd "${OUTPUTDIR}" && \
+cp "${INSTALLDATA}"/* . || exit 2
+
+rm "Git.${VERSION}.dmg" 2>/dev/null
+# This is out of sheer paranoia, though it's unnecessary.
+rm -rf "${OUTPUTDIR}/build" 2>/dev/null
+
+sed -e "s/@VERSION@/${VERSION}/g" -e "s/@VERSIONMINOR@/${VERSIONMINOR}/g" \
+-e "s/@VERSIONMAJOR@/${VERSIONMAJOR}/g" -e "s%@INSTALLROOT@%${INSTALLROOT}%g" \
+< "${INSTALLDATA}/Git.packproj.in" > Git.${VERSION}.packproj && \
+sed -e "s/@VERSION@/${VERSION}/g" < WELCOME.txt.in > WELCOME.txt && \
+sed -e "s~@LINKS@~${LINKS}~g" < "Uninstall Git.command.in" > "Uninstall Git.command" && \
+/usr/local/bin/freeze -v Git.${VERSION}.packproj && \
+(
+ditto WELCOME.txt README.txt LICENSE.txt "Uninstall Git.command" build/ && \
+chmod +x build/*.command && \
+mv "build/Git.mpkg" "build/Install Git.mpkg" && \
+PATH=/Developer/Tools:$PATH "${PACKAGINGROOT}"/create-dmg/create-dmg  --volname "Git ${VERSION}" \
+--volicon git.icns --background Git.png --window-size 532 532 --icon-size 72 \
+--icon Welcome.txt 75 50 --icon "Install Git.mpkg" 442 50 --icon README.txt 75 256 \
+--icon LICENSE.txt 75 440 --icon "Uninstall Git.command" 442 440 \
+"Git.${VERSION}.dmg" build
+) || exit 5
+) && \
+echo 'Done!' && \
+open "${OUTPUTDIR}/Git.${VERSION}.dmg"
+)

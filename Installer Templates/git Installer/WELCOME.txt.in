@@ -1,0 +1,18 @@
+Welcome to the Git @GITVER@ Installation Program.
+
+Git will be installed into /opt/git. Links for use on the command line will be provided in /usr/local/bin by default. If you prefer to not have these links installed, please choose to Customize your install.
+
+OS X 10.4 is required, with 10.4.11 highly recommended. Binaries are built as Universal for both PowerPC and Intel. Installation on 10.5 and newer is untested, but hopefully works.
+
+Installation on OS X 10.8 and newer is unsupported, due to Gatekeeper. If you try it, email with the results.
+
+To uninstall this package, run the “Uninstall Git.command” provided on the disk image.
+
+Known Issues:
+-------------
+
+* git-svn (and probably other Perl bits) don't run.
+
+For any additional issues in this build, please email lewellyn@geekbakery.net with details.
+
+Git Logo by Jason Long is licensed under the Creative Commons Attribution 3.0 Unported License.

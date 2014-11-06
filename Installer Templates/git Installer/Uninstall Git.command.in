@@ -1,0 +1,56 @@
+#!/bin/sh
+
+echo ""
+echo "This program requires you to run as an Administrator. Please enter your password if prompted."
+echo ""
+echo "Please press any key to continue, or Control-C to abort. Last chance!"
+echo ""
+
+stty=$(stty -g)
+stty -echo -icanon
+dd count=1 >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+	stty $stty
+	echo "Aborted!"
+	exit 2
+fi
+stty $stty
+
+gitlinks=0
+
+if [ -d /Library/Receipts ] ; then # < 10.6
+	
+	if [ -d "/Library/Receipts/Git Links.pkg" ]; then
+		gitlinks=1
+	fi
+	sudo rm -rf /Library/Receipts/Git\ *.pkg
+	
+elif [ -d /private/var/db/receipts ] ; then # 10.6+
+
+	echo "Uninstallation on 10.6 and newer is not tested."
+	echo "Please email lewellyn@geekbakery.net with feedback."
+	
+	if [ -f "/private/var/db/receipts/net.geekbakery.package.git.symlink.bom" ]; then
+		gitlinks=1
+	fi
+	rm -rf /private/var/db/receipts/net.geekbakery.package.git*
+
+else
+	echo "This is an unsupported environment. Uninstallation will not continue."
+	echo "Please email lewellyn@geekbakery.net with details."
+	echo ""
+	exit 23
+fi
+
+if [ $gitlinks -eq 1 ]; then
+	sudo rm -rf @GITLINKS@
+fi
+
+sudo rm -rf /opt/git
+
+echo ""
+echo "Removal process complete."
+echo "Please check for warnings or errors above."
+echo ""
+echo "Files in your home directory were not touched."
+echo ""
