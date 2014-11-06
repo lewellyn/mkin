@@ -1,0 +1,22 @@
+*.lnk
+*.un~
+*~
+.AppleDB
+.AppleDesktop
+.AppleDouble
+.DS_Store
+.LSOverride
+.Spotlight-V100
+.Trashes
+._*
+.apdisk
+.netrwhist
+Desktop.ini
+# Icon must end with two \r
+Icon
+Network Trash Folder
+Session.vim
+Temporary Items
+Thumbs.db
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
