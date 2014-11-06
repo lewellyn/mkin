@@ -43,7 +43,7 @@ else
 fi
 
 if [ $gitlinks -eq 1 ]; then
-	sudo rm -rf @GITLINKS@
+	sudo rm -rf @LINKS@
 fi
 
 sudo rm -rf /opt/git
