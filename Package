@@ -12,5 +12,6 @@ fi
 
 shift
 
-"$(dirname $0)/PackageScripts/$package" $@
+SCRIPTDIR="$(dirname $0)"
+"${SCRIPTDIR}/PackageScripts/${package}" "${SCRIPTDIR}" $@
 

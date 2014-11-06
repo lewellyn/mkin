@@ -70,25 +70,34 @@ the following invocation would work:
 
 ## Currently-supported package targets
 
-* Git: Use Get with -t option to obtain a "testing" version. Otherwise a
-  fairly basic build.
+* Git: Use ```Get``` with ```-t``` option to obtain a "testing" version.
+  Otherwise, this is a basic git build to a prefix.
 
 * Lynx: Bundles new-ish CA certificates, some Mac OS X modifications, some
-  user-experience improvements (I hope...), and an icon for /Applications
-  (so it can go in your Dock!).
+  user-experience improvements (I hope...), and an iconic launcher for
+  ```/Applications``` (so it can go in your Dock!).
 
 ## Known issues
 
 * Git:
   - Some perl modules do not work (so things like ```git-svn``` are broken).
   - The contrib items are not actually installed, but rather live in
-    ```/opt/git/contrib``` (which makes things like ```git-subtree``` harder
-    to use).
+    ```/opt/git/contrib``` (which makes things provided there, such as
+    ```git-subtree```, harder to use).
 
 * Lynx:
-  - Lynx.app does not accept dropped targets.
+  - ```Lynx.app``` does not accept dropped targets (URLs, files, nothing...).
   - There are font issues involved with "printing".
   - CA certs are a bit dated (see **URL forthcoming** for more information).
+
+## Limitations
+
+The limitations are pretty much design decisions.
+
+* Destination is not configurable.
+* The source directory is not cleaned, nor is the ```build/``` output in the
+  DMG creation destination, upon successful completion of the appropriate
+  ```PackageScript```. (The destination *is* cleaned before packaging.)
 
 ## Requirements
 
