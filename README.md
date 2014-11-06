@@ -61,6 +61,11 @@ The output, in the current directory, will be:
 5. In that same directory, a ```build``` directory with the contents of the
    .dmg, if you want to verify what's on it without mounting it.
 
+Once the ```Package``` script completes successfully, the disk image will open
+so that you may review its contents. Be sure to eject it before building the
+same target again, or the results are undefined. In some cases, a reboot will
+be necessary if you forget. This is your only warning.
+
 ### Example
 
 To get the testing version of git 2.2.0.rc0 and then build and package it,

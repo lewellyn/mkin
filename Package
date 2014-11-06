@@ -12,6 +12,12 @@ fi
 
 shift
 
-SCRIPTDIR="$(dirname $0)"
+SCRIPTDIR="`( cd \"$(dirname \"$0\")\" && pwd )`"
+if [ -z "$SCRIPTDIR" ] ; then
+	echo "Unable to determine the location of $0"
+	echo "Bailing out!"
+	exit 44
+fi
+
 "${SCRIPTDIR}/PackageScripts/${package}" "${SCRIPTDIR}" $@
 
