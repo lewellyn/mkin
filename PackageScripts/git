@@ -40,11 +40,59 @@ export INSTALLROOT="${OUTPUTDIR}/installroot" && \
 rm -rf "${OUTPUTDIR}" 2>/dev/null ; \
 make DESTDIR="${INSTALLROOT}" NO_INSTALL_HARDLINKS=1 install && \
 mkdir -p "${INSTALLROOT}"/usr/local/bin && \
-(
-cd "${INSTALLROOT}"/opt/git/bin
-for file in *; do ln -s /opt/git/bin/$file "${INSTALLROOT}"/usr/local/bin/$file; done
-) && \
 cp -rp contrib "${INSTALLROOT}"/opt/git && \
+(
+# Contrib items installed:
+# 	contacts (sans docs)
+# 	credential/netrc
+# 	credential/osxkeychain
+# 	diff-highlight
+# 	git-jump
+# 	subtree
+# 	workdir
+
+# Contrib items I'd like to install:
+# 	completion
+# 	remote-helpers
+
+ cd contrib && \
+ (
+  cd workdir && \
+  cp git-new-workdir "${INSTALLROOT}"/opt/git/bin && \
+  chmod +x "${INSTALLROOT}"/opt/git/bin/git-new-workdir
+ ) && \
+ (
+  for tool in diff-highlight git-jump; do
+  (
+   cd ${tool} && \
+   cp ${tool} "${INSTALLROOT}"/opt/git/bin && \
+   chmod +x "${INSTALLROOT}"/opt/git/bin/${tool}
+  )
+  done
+ ) && \
+ (
+  for tool in contacts subtree; do
+  (
+   cd ${tool} && \
+   make DESTDIR="${INSTALLROOT}" install
+   # Can't install docs until asciidoc is built. :(
+  )
+  done
+ ) && \
+ (
+  cd credential && \
+  (
+   cd netrc && \
+   cp git-credential-netrc "${INSTALLROOT}"/opt/git/bin && \
+   chmod +x "${INSTALLROOT}"/opt/git/bin/git-credential-netrc
+  ) && \
+  (
+   cd osxkeychain && \
+   make && \
+   cp git-credential-osxkeychain "${INSTALLROOT}"/opt/git/bin
+  )
+ )
+) && \
 (
 cd "${SRCDIR}/../git-htmldocs-${VERSION}" && \
 mkdir "${INSTALLROOT}"/opt/git/doc && \
@@ -53,8 +101,11 @@ cp -rp . "${INSTALLROOT}"/opt/git/doc
 (
 cd "${SRCDIR}/../git-manpages-${VERSION}" && \
 cp -rp . "${INSTALLROOT}"/opt/git/share/man
+) && \
+(
+cd "${INSTALLROOT}"/opt/git/bin
+for file in *; do ln -s /opt/git/bin/$file "${INSTALLROOT}"/usr/local/bin/$file; done
 ) || exit 42
-# cp -rp Documentation "${INSTALLROOT}"/opt/git || exit 42
 
 # Packaging process:
 # Note that the packproj requires Iceberg and its CLI tools.
