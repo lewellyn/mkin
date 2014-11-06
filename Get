@@ -1,0 +1,78 @@
+#!/bin/sh
+
+if [ -z "${2}" ]; then
+	echo "You forgot to give any arguments."
+	exit 255
+fi
+
+case "${1}" in
+	git)
+		if [ "${2}" == "-t" ]; then
+			subdir=testing/
+			shift
+		fi
+		
+		echo "Getting git..."
+		echo ""
+		
+		curl -Ok "https://www.kernel.org/pub/software/scm/git/${subdir}git-${2}.tar.gz" && \
+		curl -Ok "https://www.kernel.org/pub/software/scm/git/${subdir}git-htmldocs-${2}.tar.gz" && \
+		curl -Ok "https://www.kernel.org/pub/software/scm/git/${subdir}git-manpages-${2}.tar.gz" || \
+		exit 2
+		
+		echo ""
+		echo "Removing any old directories..."
+		rm -rf git-${2} 2>/dev/null
+		rm -rf git-htmldocs-${2} 2>/dev/null
+		rm -rf git-manpages-${2} 2>/dev/null
+
+		echo "" && \
+		echo "Expanding git-${2}.tar.gz..." && \
+		tar zxf git-${2}.tar.gz && \
+		echo "Expanding git-htmldocs-${2}.tar.gz..." && \
+		(mkdir git-htmldocs-${2} && \
+		 cd git-htmldocs-${2} && \
+		 tar zxf ../git-htmldocs-${2}.tar.gz) && \
+		echo "Expanding git-manpages-${2}.tar.gz..." && \
+		(mkdir git-manpages-${2} && \
+		 cd git-manpages-${2} && \
+		 tar zxf ../git-manpages-${2}.tar.gz) || \
+		exit 3
+		
+		echo ""
+		echo "Done."
+		;;
+		
+	lynx)
+		shortver=$(echo ${2}| sed 's/^\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)\([^0-9].*$\)/\1-\2-\3/')
+		echo "Getting lynx..."
+		echo ""
+
+		#curl -O "http://lynx.isc.org/current/lynx${2}.tar.gz" || \
+		curl -O "http://lynx.isc.org/gnumatic/lynx-${2}.tar.gz" || \
+		exit 2
+
+		echo ""
+		echo "Removing any old directories..."
+		#rm -rf lynx${shortver} 2>/dev/null
+		rm -rf lynx-${2} 2>/dev/null
+
+		echo "" && \
+		echo "Expanding lynx-${2}.tar.gz..." && \
+		tar zxf lynx-${2}.tar.gz || \
+		exit 3
+
+		echo ""
+		echo "Done."
+		;;
+	
+	*)
+		echo "Valid choices are:"
+		echo "git [-t] version"
+		echo "lynx version"
+		exit 5
+esac
+
+# Play a bell at the end.
+echo ""
+

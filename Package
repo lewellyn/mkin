@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+	echo "Need a packaging target."
+	echo ""
+	echo "$0 target [additional options]"
+	echo ""
+	exit 1
+else
+	package="$1"
+fi
+
+shift
+
+"$(dirname $0)/PackageScripts/$package" $@
+
