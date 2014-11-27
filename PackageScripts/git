@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 # Try to keep things clean and without non-system dependencies. :P
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
@@ -103,8 +103,14 @@ cd "${SRCDIR}/../git-manpages-${VERSION}" && \
 cp -rp . "${INSTALLROOT}"/opt/git/share/man
 ) && \
 (
-cd "${INSTALLROOT}"/opt/git/bin
-for file in *; do ln -s /opt/git/bin/$file "${INSTALLROOT}"/usr/local/bin/$file; done
+# Link hackery.
+cd "${INSTALLROOT}"/opt/git/bin && \
+for file in git-cvsserver git-shell git-upload-pack; do
+	rm $file && ln -s ../libexec/git-core/$file $file
+done && \
+for file in *; do ln -s /opt/git/bin/$file "${INSTALLROOT}"/usr/local/bin/$file; done && \
+cd ../libexec/git-core && \
+rm git-citool && ln -s git-gui git-citool
 ) || exit 42
 
 # Packaging process:
