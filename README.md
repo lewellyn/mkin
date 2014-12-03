@@ -86,12 +86,15 @@ the following invocation would work:
 
 * Git:
   - Some perl modules do not work (so things like ```git-svn``` are broken).
-  - The contrib items are not actually installed, but rather live in
-    ```/opt/git/contrib``` (which makes things provided there, such as
-    ```git-subtree```, harder to use).
+  - Most contrib items are not actually installed, but rather live in
+    ```/opt/git/contrib``` (which makes things provided there harder
+    to use).
 
 * Lynx:
   - ```Lynx.app``` does not accept dropped targets (URLs, files, nothing...).
+  - ```Lynx.app``` does not stay "open" as it simply invokes
+    ```Terminal.app```. Investigation into how to best remove the
+    ```Terminal.app``` dependency is ongoing.
   - There are font issues involved with "printing".
   - CA certs are a bit dated (see **URL forthcoming** for more information).
 
