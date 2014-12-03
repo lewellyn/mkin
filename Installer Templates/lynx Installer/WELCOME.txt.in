@@ -1,0 +1,14 @@
+Welcome to the Lynx @VERSION@ Installation Program.
+
+Lynx will be installed into /opt/lynx.
+
+Known Issues:
+-------------
+
+* Cannot drop HTML files or pass URLs to /Applications/Lynx.app yet.
+* /Applications/Lynx.app requires you to use Apple's Terminal. I'm sorry.
+* Depending on your preferences in Terminal, you might get an extra window if Terminal wasn't already running.
+* Print Preview & PDF creation emit a (harmless) warning about Monaco. Blame Apple. :/
+* To embed fonts in your PDF, select "Open in Preview" from the Print menu and save as a PDF from Preview. PDFs generated from "Save as PDF" do not embed the fonts, which may make the PDF unviewable on non-Macs.
+
+For any additional issues in this build, please email lewellyn@geekbakery.net with details.

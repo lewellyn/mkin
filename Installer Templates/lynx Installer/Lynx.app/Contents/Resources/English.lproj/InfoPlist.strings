@@ -1,0 +1,4 @@
+CFBundleName = "Lynx";
+CFBundleShortVersionString = "2.8.8";
+CFBundleGetInfoString = "Lynx version 2.8.8 Copyright 2012 Greenviolet";
+NSHumanReadableCopyright = "Copyright 2012 Greenviolet.";

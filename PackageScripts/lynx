@@ -1,0 +1,167 @@
+#!/bin/sh
+
+# Try to keep things clean and without non-system dependencies. :P
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+# Make sure we have the correct packaging root
+if [ ! -d "$1" ] ; then
+	echo "This script is meant to be invoked via Package."
+	exit 254
+else
+	export PACKAGINGROOT="$1"
+	shift
+fi
+
+case "$1" in
+	*)
+		REQVERSION=-$1
+		;;
+		# The below are for non-gnumatic tarballs. Probably going to remove the logic.
+	*-*)
+		REQVERSION=$1
+		;;
+	*.*)
+		REQVERSION=$(echo $1 | sed 's/^\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)\([^0-9].*$\)/\1-\2-\3/')
+		;;
+esac
+
+if [ -n "$REQVERSION" ] ; then
+	cd lynx$REQVERSION
+fi
+
+if [ ! -f LYMessages_en.h ] ; then
+	echo "This does not look like a lynx source tree. Aborting."
+	exit 23
+fi
+
+# Build process:
+
+SDK=/Developer/SDKs/MacOSX10.4u.sdk \
+CFLAGS="-fno-common -O3 -fno-strict-aliasing -pipe -arch ppc -arch i686 -nostdinc -B$SDK/usr/include/gcc -B$SDK/usr/lib/gcc -isystem$SDK/usr/include -F$SDK/System/Library/Frameworks" \
+CXXFLAGS=$CFLAGS LDFLAGS="-arch ppc -arch i686 -Wl,-syslibroot,$SDK" \
+./configure -C --prefix=/opt/lynx \
+--enable-cjk --enable-charset-choice --enable-default-colors \
+--enable-kbd-layout --with-bzlib --with-ssl --with-zlib --enable-externs \
+--enable-gzip-help --enable-htmlized-cfg --enable-internal-links --enable-ipv6 \
+--enable-japanese-utf8 --enable-local-docs --enable-nested-tables --enable-nsl-fork \
+--enable-underlines --enable-widec --with-screen=ncurses && \
+sed -i bak \
+	-e 's/^#define CHARACTER_SET "iso-8859-1"/#define CHARACTER_SET "utf-8"/' \
+	-e 's/^#define SHOW_CURSOR FALSE/#define SHOW_CURSOR TRUE/' \
+	-e 's~^#define SUBSTITUTE_UNDERSCORES        FALSE   /* Use _underline_ format in dumps */~#define SUBSTITUTE_UNDERSCORES        TRUE    /* Use _underline_ format in dumps */~' \
+	-e 's~^#define SSL_CERT_FILE NULL~#define SSL_CERT_FILE "/opt/lynx/etc/ca-bundle.crt"~' \
+userdefs.h && \
+sed -i bak \
+	-e 's/^#SCROLLBAR:FALSE/SCROLLBAR:TRUE/' -e 's/^#USE_MOUSE:FALSE/USE_MOUSE:TRUE/' \
+	-e 's/^#SHOW_KB_RATE:TRUE/SHOW_KB_RATE:KB,ETA/' \
+	-e 's/^#TEXTFIELDS_NEED_ACTIVATION:FALSE/TEXTFIELDS_NEED_ACTIVATION:TRUE/' \
+	-e 's/^#SOURCE_CACHE:NONE/SOURCE_CACHE:MEMORY/' \
+	-e 's/^#DEFAULT_CACHE_SIZE:10/DEFAULT_CACHE_SIZE:512/' \
+	-e 's/^#DEFAULT_VIRTUAL_MEMORY_SIZE:512000/DEFAULT_VIRTUAL_MEMORY_SIZE:25165824/' \
+	-e 's/^#QUIT_DEFAULT_YES:TRUE/QUIT_DEFAULT_YES:FALSE/' \
+	-e 's/^#XHTML_PARSING:FALSE/XHTML_PARSING:TRUE/' \
+	-e 's!^#SAVE_SPACE:~/foo/!SAVE_SPACE:~/Downloads/!' \
+	-e 's/^#AUTO_SESSION:FALSE/AUTO_SESSION:TRUE/' \
+	-e 's!^#SESSION_FILE:lynx_session!SESSION_FILE:~/.lynx_session!' \
+	-e 's/^#SESSION_LIMIT:250/SESSION_LIMIT:384/' \
+	-e 's/^#CHARACTER_SET:iso-8859-1/CHARACTER_SET:utf-8/' \
+	-e 's/^#HTML5_CHARSETS:FALSE/HTML5_CHARSETS:TRUE/' \
+	-e 's/^#ASSUME_CHARSET:iso-8859-1/ASSUME_CHARSET:utf-8/' \
+	-e 's/^#ASSUME_LOCAL_CHARSET:iso-8859-1/ASSUME_LOCAL_CHARSET:utf-8/' \
+	-e 's/^#NCR_IN_BOOKMARKS:FALSE/NCR_IN_BOOKMARKS:TRUE/' \
+	-e 's/^#BOLD_HEADERS:FALSE/BOLD_HEADERS:TRUE/' \
+	-e 's/^#BOLD_NAME_ANCHORS:FALSE/BOLD_NAME_ANCHORS:TRUE/' \
+	-e 's/^#ACCEPT_ALL_COOKIES:FALSE/ACCEPT_ALL_COOKIES:TRUE/' \
+	-e 's/^#PERSISTENT_COOKIES:FALSE/PERSISTENT_COOKIES:TRUE/' \
+	-e 's!^#COOKIE_FILE:~/.lynx_cookies!COOKIE_FILE:~/.lynx_cookies!' \
+	-e 's/^#NONRESTARTING_SIGWINCH:FALSE/NONRESTARTING_SIGWINCH:XWINDOWS/' \
+lynx.cfg || exit 113
+
+cat >> lynx.cfg << 'EOF'
+
+# Stuff specific to Mac OS X
+PRINTER:Open in Preview:FILENAME="%s" ; echo "Please wait... Preparing for Preview..." && enscript --word-wrap -E -f Monaco@10 -F LucidaGrande-Bold@10 -Z --color -p "$FILENAME.ps" "$FILENAME" && open -b com.apple.Preview "$FILENAME.ps":FALSE
+PRINTER:Save as PDF:echo "Please wait... Creating your PDF..." && enscript --word-wrap -E -f Monaco@10 -F LucidaGrande-Bold@10 -Z --color -p - "%s" | pstopdf -i -p -o "%s":FALSE
+DOWNLOADER:View in less:less -f '%s':FALSE
+DOWNLOADER:Open with default program:open %s:FALSE
+DOWNLOADER:Open with default text editor:open -t %s:FALSE
+DOWNLOADER:Open with TextEdit:open -e %s:FALSE
+
+EOF
+
+export SRCDIR="${PWD}"
+export VERSION=$(awk -F = '/^VERSION=/ { print $2; }' configure)
+case "$VERSION" in
+	*dev*)
+		LYNXRELEASE=1
+		;;
+	*pre*)
+		LYNXRELEASE=3
+		;;
+	*rel*)
+		LYNXRELEASE=5
+		;;
+	*)
+		LYNXRELEASE=0
+		;;
+esac
+export VERSIONMAJOR=${VERSION/\.*}
+export VERSIONMINOR=$(echo ${VERSION} | sed 's/^[0-9]*\.\([0-9]*\.\)\([0-9]*\)[a-z]*\([^0-9].*$\)/\1\2\3/')
+export VERSIONMINOR=$(echo ${VERSIONMINOR} | awk -F . "{printf(\"%02d%02d%1d%02d\\n\",\$1,\$2,${LYNXRELEASE},\$3);}")
+export OUTPUTDIR="${SRCDIR}/../InstallerOutput/lynx-${VERSION}"
+export INSTALLROOT="${OUTPUTDIR}/installroot"
+
+make && \
+rm -rf "${OUTPUTDIR}" 2>/dev/null ; \
+make DESTDIR="${INSTALLROOT}" install-full && \
+(
+cd "${INSTALLROOT}"/opt/lynx/etc && \
+curl -Ok https://raw.githubusercontent.com/bagder/ca-bundle/e9175fec5d0c4d42de24ed6d84a06d504d5e5a09/ca-bundle.crt
+) && \
+mkdir -p "${INSTALLROOT}"/usr/local/bin && \
+(
+cd "${INSTALLROOT}"/opt/lynx/bin
+for file in *; do ln -s /opt/lynx/bin/$file "${INSTALLROOT}"/usr/local/bin/$file; done
+) && \
+make DESTDIR="${INSTALLROOT}" preinstall || exit 42
+
+# Packaging process:
+# Note that the packproj requires Iceberg and its CLI tools.
+(
+echo "Building package for Lynx ${VERSION}"
+
+export INSTALLDATA="${PACKAGINGROOT}/Installer Templates/lynx Installer"
+cd "${INSTALLROOT}"/usr/local/bin
+for file in *; do
+	export LINKS="/usr/local/bin/$file ${LINKS}"
+done
+cd "${SRCDIR}"
+
+cp COPYHEADER "${OUTPUTDIR}/LICENSE.txt" && \
+cp COPYING "${OUTPUTDIR}/LICENSE-GPLv2.txt" && \
+cp README "${OUTPUTDIR}/README.txt" && \
+cd "${OUTPUTDIR}" && \
+cp -rp "${INSTALLDATA}"/* . || exit 2
+
+rm "Lynx.${VERSION}.dmg" 2>/dev/null
+rm -rf "${OUTPUTDIR}/build" 2>/dev/null
+
+sed -e "s/@VERSION@/${VERSION}/g" -e "s/@VERSIONMINOR@/${VERSIONMINOR}/g" \
+-e "s/@VERSIONMAJOR@/${VERSIONMAJOR}/g" -e "s%@INSTALLROOT@%${INSTALLROOT}%g" \
+< "${INSTALLDATA}/Lynx.packproj.in" > Lynx.${VERSION}.packproj && \
+sed -e "s/@VERSION@/${VERSION}/g" < WELCOME.txt.in > WELCOME.txt && \
+sed -e "s~@LINKS@~${LINKS}~g" < "Uninstall Lynx.command.in" > "Uninstall Lynx.command" && \
+/usr/local/bin/freeze -v Lynx.${VERSION}.packproj && \
+(
+ditto WELCOME.txt README.txt LICENSE.txt LICENSE-GPLv2.txt "Uninstall Lynx.command" build/ && \
+chmod +x build/*.command && \
+mv "build/Lynx.mpkg" "build/Install Lynx.mpkg" && \
+PATH=/Developer/Tools:$PATH "${PACKAGINGROOT}"/create-dmg/create-dmg  --volname "Lynx ${VERSION}" \
+--volicon lynx.icns --background Lynx.png --window-size 700 512 --icon-size 72 \
+--icon Welcome.txt 75 50 --icon "Install Lynx.mpkg" 442 50 --icon README.txt 75 256 \
+--icon LICENSE.txt 75 440 --icon "Uninstall Lynx.command" 442 440 \
+"Lynx.${VERSION}.dmg" build
+) || exit 5
+) && \
+echo 'Done!' && \
+open "${OUTPUTDIR}/Lynx.${VERSION}.dmg"
