@@ -1,0 +1,15 @@
+Stuff
+=====
+
+This directory is simply common, shared "stuff" useful for multiple packages.
+
+CA Certificates:
+----------------
+
+ca-bundle.crt: Newer CA certificate bundle than is shipped with OS X.
+		Can be updated with:
+		```curl -Ok https://raw.githubusercontent.com/bagder/ca-bundle/e9175fec5d0c4d42de24ed6d84a06d504d5e5a09/ca-bundle.crt```
+
+ssl.certs.shar & ssl.links.shar: Hashed CA certificates for OpenSSL.
+		Can be updated with:
+		```for file in certs links; do curl -ko ssl.$file.shar https://www.mirbsd.org/cvs.cgi/~checkout~/src/etc/ssl.$file.shar\?rev=HEAD\;content-type=application%2Fx-shar ; done```
