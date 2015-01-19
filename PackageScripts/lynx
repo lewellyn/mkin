@@ -45,13 +45,13 @@ CXXFLAGS=$CFLAGS LDFLAGS="-arch ppc -arch i686 -Wl,-syslibroot,$SDK" \
 --enable-gzip-help --enable-htmlized-cfg --enable-internal-links --enable-ipv6 \
 --enable-japanese-utf8 --enable-local-docs --enable-nested-tables --enable-nsl-fork \
 --enable-underlines --enable-widec --with-screen=ncurses && \
-sed -i bak \
-	-e 's/^#define CHARACTER_SET "iso-8859-1"/#define CHARACTER_SET "utf-8"/' \
+sed -i .bak \
+	-e 's/^#define CHARACTER_SET "iso-8859-1"/#define CHARACTER_SET "us-ascii"/' \
 	-e 's/^#define SHOW_CURSOR FALSE/#define SHOW_CURSOR TRUE/' \
 	-e 's~^#define SUBSTITUTE_UNDERSCORES        FALSE   /* Use _underline_ format in dumps */~#define SUBSTITUTE_UNDERSCORES        TRUE    /* Use _underline_ format in dumps */~' \
-	-e 's~^#define SSL_CERT_FILE NULL~#define SSL_CERT_FILE "/opt/lynx/etc/ca-bundle.crt"~' \
-userdefs.h && \
-sed -i bak \
+	-e 's~^#define SSL_CERT_DIR NULL~#define SSL_CERT_DIR "/opt/lynx/etc/ca-bundle.crt"~' \
+	userdefs.h && \
+sed -i .bak \
 	-e 's/^#SCROLLBAR:FALSE/SCROLLBAR:TRUE/' -e 's/^#USE_MOUSE:FALSE/USE_MOUSE:TRUE/' \
 	-e 's/^#SHOW_KB_RATE:TRUE/SHOW_KB_RATE:KB,ETA/' \
 	-e 's/^#TEXTFIELDS_NEED_ACTIVATION:FALSE/TEXTFIELDS_NEED_ACTIVATION:TRUE/' \
@@ -75,6 +75,7 @@ sed -i bak \
 	-e 's/^#PERSISTENT_COOKIES:FALSE/PERSISTENT_COOKIES:TRUE/' \
 	-e 's!^#COOKIE_FILE:~/.lynx_cookies!COOKIE_FILE:~/.lynx_cookies!' \
 	-e 's/^#NONRESTARTING_SIGWINCH:FALSE/NONRESTARTING_SIGWINCH:XWINDOWS/' \
+	-e 's/^#COLOR_STYLE: opaque.lss/COLOR_STYLE: opaque.lss/' \
 lynx.cfg || exit 113
 
 cat >> lynx.cfg << 'EOF'
@@ -115,8 +116,10 @@ make && \
 rm -rf "${OUTPUTDIR}" 2>/dev/null ; \
 make DESTDIR="${INSTALLROOT}" install-full && \
 (
-cd "${INSTALLROOT}"/opt/lynx/etc && \
-curl -Ok https://raw.githubusercontent.com/bagder/ca-bundle/e9175fec5d0c4d42de24ed6d84a06d504d5e5a09/ca-bundle.crt
+mkdir -p "${INSTALLROOT}"/opt/lynx/etc/ssl/certs && \
+cd "${INSTALLROOT}"/opt/lynx/etc/ssl/certs && \
+sh "${PACKAGINGROOT}/Stuff/ssl.certs.shar" && \
+sh "${PACKAGINGROOT}/Stuff/ssl.links.shar"
 ) && \
 mkdir -p "${INSTALLROOT}"/usr/local/bin && \
 (
