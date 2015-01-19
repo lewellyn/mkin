@@ -139,8 +139,8 @@ mkin $ git subtree pull --prefix create-dmg create-dmg master
 
 To push changes from the create-dmg subtree:
 
-mkin $ git remote add create-dmg git@github.com:lewellyn/yoursway-create-dmg.git
-mkin $ git subtree push --prefix create-dmg create-dmg master
+    $ git remote add create-dmg git@github.com:lewellyn/yoursway-create-dmg.git
+    $ git subtree push --prefix create-dmg create-dmg master
 
 Of course, if you're working with a personal clone of the yoursway-create-dmg
 repository, you will update the remote URLs appropriately. :)
@@ -151,12 +151,14 @@ does include the subtree module, of course.
 
 ## License
 
-See LICENSE.txt for actual license text. In spirit, I want "permissive
-license, but spread the good around" as the overriding spirit. As far as I
-know, this license is compatible with the GPL (which is, of course, used by
-some of these projects). While the GPL does not, as far as I am aware, require
-the distribution of build scripts and such, some projects may include
-additional "glue" to make things more "Mac-like". If I am not in compliance
-with the GPL somehow, please inform me of the details of my noncompliance and
-I will relicense as appropriate.
+See LICENSE.txt for actual license text. I want "permissive license, but spread
+the good around" as the overriding spirit of the license choice. Not everything
+this repo can package will be under the GPL, and I don't want to restrict people
+from using things they find in this repo from using what they find for what they
+are working on themselves. So, the license choice reflects that. As far as I am
+aware, this license is compatible with the GPL (which is, of course, used by
+some of these projects). Some projects may include additional "glue" beyond the
+build scripts to make things more "Mac-like". If I am not in compliance with the
+GPL somehow for the glue or any other aspect, please inform me of the details of
+my noncompliance and I will relicense as appropriate.
 
