@@ -19,5 +19,6 @@ if [ -z "$SCRIPTDIR" ] ; then
 	exit 44
 fi
 
+cd build
 "${SCRIPTDIR}/PackageScripts/${package}" "${SCRIPTDIR}" $@
 
