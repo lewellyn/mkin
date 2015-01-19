@@ -85,10 +85,7 @@ the following invocation would work:
 ## Known issues
 
 * Git:
-  - Some perl modules do not work (so things like ```git-svn``` are broken).
-  - Most contrib items are not actually installed, but rather live in
-    ```/opt/git/contrib``` (which makes things provided there harder
-    to use).
+  - See ```Readme-Git.md```
 
 * Lynx:
   - ```Lynx.app``` does not accept dropped targets (URLs, files, nothing...).

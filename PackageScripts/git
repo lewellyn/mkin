@@ -103,6 +103,50 @@ cd "${SRCDIR}/../git-manpages-${VERSION}" && \
 cp -rp . "${INSTALLROOT}"/opt/git/share/man
 ) && \
 (
+# Add third-party extensions.
+(
+# Cheat sheets
+mkdir -p work/cheatsheets && \
+mkdir -p "${INSTALLROOT}"/opt/git/share/extra/cheat && \
+(
+cd "${INSTALLROOT}"/opt/git/share/extra/cheat && \
+curl -O http://wall-skills.com/wp-content/uploads/2013/12/git-Cheat-Sheet_Wall-Skills1.pdf
+) && \
+(
+cd work/cheatsheets && \
+curl -O http://jan-krueger.net/wordpress/wp-content/uploads/2007/09/git-cheat-sheet-v2.zip && \
+unzip git-cheat-sheet-v2.zip && \
+mv git-cheat-sheet-v2.pdf "${INSTALLROOT}"/opt/git/share/extra/cheat
+)
+) && \
+(
+# git-fat
+cd "${INSTALLROOT}"/opt/git/bin && \
+curl -Ok https://raw.githubusercontent.com/ozkandikmen-work/git-fat/gunter-from-master/git-fat
+curl -Ok https://raw.githubusercontent.com/ozkandikmen-work/git-fat/gunter-from-master/git2fat
+chmod +x git-fat git2fat
+) && \
+(
+# git-last
+cd "${INSTALLROOT}"/opt/git/bin && \
+curl -Ok https://raw.githubusercontent.com/EugeneKay/scripts/master/bash/git-last.sh && \
+mv git-last.sh git-last && \
+chmod +x git-last
+)
+) && \
+(
+# gfl / git-forest
+mkdir -p work/gfl && \
+cd work/gfl && \
+curl -Ok https://codeload.github.com/calebthompson/gfl/zip/master && \
+unzip master && \
+cd gfl-master && \
+chmod +x git-forest gfl && \
+mv git-forest gfl "${INSTALLROOT}"/opt/git/bin && \
+mkdir -p "${INSTALLROOT}"/opt/git/share/extra/doc/gfl && \
+mv README.md LICENSE "${INSTALLROOT}"/opt/git/share/extra/doc/gfl
+) && \
+(
 # Link hackery.
 cd "${INSTALLROOT}"/opt/git/bin && \
 for file in git-cvsserver git-shell git-upload-pack; do
