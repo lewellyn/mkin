@@ -130,6 +130,25 @@ See Atlassian's introduction to working with subtrees at
 http://blogs.atlassian.com/2013/05/alternatives-to-git-submodule-git-subtree/
 for some information about working with them.
 
+### create-dmg/ tips
+
+To update the create-dmg subtree to reflect the latest changes in the master:
+
+mkin $ git remote add create-dmg git@github.com:lewellyn/yoursway-create-dmg.git
+mkin $ git subtree pull --prefix create-dmg create-dmg master
+
+To push changes from the create-dmg subtree:
+
+mkin $ git remote add create-dmg git@github.com:lewellyn/yoursway-create-dmg.git
+mkin $ git subtree push --prefix create-dmg create-dmg master
+
+Of course, if you're working with a personal clone of the yoursway-create-dmg
+repository, you will update the remote URLs appropriately. :)
+
+It is not recommended to try to work with the create-dmg subtree if your git
+does not have the subtree module available. The git provided by this repo
+does include the subtree module, of course.
+
 ## License
 
 See LICENSE.txt for actual license text. In spirit, I want "permissive
